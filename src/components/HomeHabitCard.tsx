@@ -40,7 +40,6 @@ export default function HomeHabitCard({
       <div className="habit-card-top">
         <div className="habit-card-text">
           <h2 className="habit-name">{habit.name}</h2>
-          <p className="habit-freq">{habit.frequency}</p>
         </div>
 
         {habit.trackingMode === "multiple" ? (

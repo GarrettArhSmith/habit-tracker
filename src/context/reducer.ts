@@ -189,7 +189,6 @@ function createHabitReducer(
   const newHabit: Habit = {
     id: action.id ?? crypto.randomUUID(),
     name: action.name,
-    frequency: action.frequency,
     color: action.color,
     trackingMode: action.trackingMode,
     dailyTarget: normalizeTarget(action.dailyTarget, 1),

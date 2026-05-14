@@ -16,7 +16,6 @@ export type HabitHistory = Record<string, number>;
 export type Habit = {
   id: string;
   name: string;
-  frequency: string;
   color: string;
   trackingMode: TrackingMode;
   dailyTarget: number;
@@ -85,7 +84,6 @@ export type AppAction =
       type: "CREATE_HABIT";
       id?: string;
       name: string;
-      frequency: string;
       color: string;
       trackingMode: TrackingMode;
       measurement: string;

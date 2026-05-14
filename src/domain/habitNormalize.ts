@@ -9,7 +9,6 @@ export type NormalizeHabitHistory = Record<string, number>;
 export type NormalizeHabit = {
   id: string;
   name: string;
-  frequency: string;
   color: string;
   trackingMode: NormalizeTrackingMode;
   dailyTarget: number;
@@ -73,7 +72,7 @@ function createDefaultHabit(fallbackColor: string): NormalizeHabit {
   return {
     id: crypto.randomUUID(),
     name: "Untitled Habit",
-    frequency: "Daily",
+
     color: fallbackColor,
     trackingMode: "binary",
     dailyTarget: 1,
@@ -98,7 +97,7 @@ function normalizeHabitRecord(
   const habit: NormalizeHabit = {
     id: normalizeHabitId(source.id),
     name: toNonEmptyString(source.name, "Untitled Habit"),
-    frequency: toNonEmptyString(source.frequency, "Daily"),
+
     color: toNonEmptyString(source.color, fallbackColor),
     trackingMode,
     dailyTarget: normalizeTarget(source.dailyTarget, 1),

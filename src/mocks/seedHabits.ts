@@ -132,7 +132,6 @@ export function createSeedHabits(): NormalizeHabit[] {
     {
       id: "7eddbbce-2fe9-4753-b7df-27f36765d4ca",
       name: "Morning Meditation",
-      frequency: "Daily",
       color: "#10b981",
       trackingMode: "binary",
       dailyTarget: 1,
@@ -142,7 +141,6 @@ export function createSeedHabits(): NormalizeHabit[] {
     {
       id: "73653e6c-a98a-4637-b113-edfbe750d2f4",
       name: "Water Intake",
-      frequency: "Daily",
       color: "#06b6d4",
       trackingMode: "multiple",
       dailyTarget: 8,
@@ -152,7 +150,6 @@ export function createSeedHabits(): NormalizeHabit[] {
     {
       id: "0dd629be-4e24-4a94-a3f3-dd0ad0f0f4b9",
       name: "Read 20 Pages",
-      frequency: "Daily",
       color: "#2170e4",
       trackingMode: "binary",
       dailyTarget: 1,
@@ -162,7 +159,6 @@ export function createSeedHabits(): NormalizeHabit[] {
     {
       id: "11e8cbc9-5033-46b9-b881-8ea02d9ca7d1",
       name: "Exercise",
-      frequency: "Mon, Wed, Fri",
       color: "#fc7c78",
       trackingMode: "multiple",
       dailyTarget: 30,
@@ -172,7 +168,6 @@ export function createSeedHabits(): NormalizeHabit[] {
     {
       id: "8dcf7ea3-b9ff-4106-a7c4-b2a3d6032dc5",
       name: "Journal Entry",
-      frequency: "Daily",
       color: "#f59e0b",
       trackingMode: "binary",
       dailyTarget: 1,
@@ -182,7 +177,6 @@ export function createSeedHabits(): NormalizeHabit[] {
     {
       id: "e585d277-cd26-4321-92bb-5cb88b99bf85",
       name: "Fruits & Veggies",
-      frequency: "Daily",
       color: "#ec4899",
       trackingMode: "multiple",
       dailyTarget: 5,
@@ -192,7 +186,6 @@ export function createSeedHabits(): NormalizeHabit[] {
     {
       id: "f7252496-6f4a-4e49-b973-4e4ba2cdb5ea",
       name: "No Sweets",
-      frequency: "Daily",
       color: "#8b5cf6",
       trackingMode: "binary",
       dailyTarget: 1,
@@ -201,14 +194,7 @@ export function createSeedHabits(): NormalizeHabit[] {
     },
     {
       id: "57f02ab5-eb0a-4fb9-97bc-faa59e8f9fbe",
-      name: "Gratitude Practice",
-      frequency: "Daily",
-      color: "#84cc16",
-      trackingMode: "binary",
-      dailyTarget: 1,
-      completionRule: "goal",
-      measurement: "times",
-    },
+      name: "Gratitude Practice
   ];
 
   const histories = buildBalancedHistories(days, templates);

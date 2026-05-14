@@ -1,15 +1,8 @@
 import { useState } from "react";
-import {
-  X,
-  CircleUser,
-  CalendarDays,
-  CalendarRange,
-  Lightbulb,
-} from "lucide-react";
+import { X, CircleUser, Lightbulb } from "lucide-react";
 import { useApp } from "../context/api";
 import ColorPicker from "../components/ColorPicker";
 import type { CompletionRule, TrackingMode } from "../context/types";
-import type { LucideIcon } from "lucide-react";
 import MultiCompletionFields from "../components/MultiCompletionFields";
 import { COLOR_PRESETS } from "../constants/colors";
 
@@ -17,16 +10,9 @@ function withActiveClass(baseClassName: string, isActive: boolean): string {
   return isActive ? `${baseClassName} active` : baseClassName;
 }
 
-type FrequencyOption = {
-  label: string;
-  value: string;
-  Icon: LucideIcon;
-};
-
 type CreateHabitAction = {
   type: "CREATE_HABIT";
   name: string;
-  frequency: string;
   color: string;
   trackingMode: TrackingMode;
   measurement: string;
@@ -48,7 +34,6 @@ function canCreateHabit(
 
 function buildCreateHabitAction(input: {
   name: string;
-  frequency: string;
   color: string;
   trackingMode: TrackingMode;
   measurement: string;
@@ -59,7 +44,6 @@ function buildCreateHabitAction(input: {
   return {
     type: "CREATE_HABIT",
     name: trimmedName,
-    frequency: input.frequency,
     color: input.color,
     trackingMode: input.trackingMode,
     measurement: input.measurement,
@@ -89,41 +73,10 @@ type MultiCompletionSettingsProps = {
   }) => void;
 };
 
-type FrequencySelectorProps = {
-  frequency: string;
-  onChange: (frequency: string) => void;
-  frequencies: ReadonlyArray<FrequencyOption>;
-};
-
 type CompletionModeToggleProps = {
   mode: TrackingMode;
   onChange: (mode: TrackingMode) => void;
 };
-
-function FrequencySelector({
-  frequency,
-  onChange,
-  frequencies,
-}: FrequencySelectorProps): JSX.Element {
-  return (
-    <section>
-      <p className="t-label label-mb-10">Frequency</p>
-      <div className="freq-grid">
-        {frequencies.map(({ label, value, Icon }) => (
-          <button
-            key={value}
-            className={withActiveClass("freq-btn", frequency === value)}
-            onClick={() => onChange(value)}
-            aria-pressed={frequency === value}
-          >
-            <Icon size={18} />
-            {label}
-          </button>
-        ))}
-      </div>
-    </section>
-  );
-}
 
 function CompletionModeToggle({
   mode,
@@ -172,15 +125,9 @@ function MultiCompletionSettings({
   );
 }
 
-const FREQUENCIES: ReadonlyArray<FrequencyOption> = [
-  { label: "Daily", value: "Daily", Icon: CalendarDays },
-  { label: "Weekly", value: "Mon, Wed, Fri", Icon: CalendarRange },
-];
-
 export default function NewHabitScreen(): JSX.Element {
   const { dispatch } = useApp();
   const [name, setName] = useState("");
-  const [frequency, setFrequency] = useState("Daily");
   const [color, setColor] = useState(getDefaultHabitColor());
   const [trackingMode, setTrackingMode] = useState<TrackingMode>("binary");
   const [measurement, setMeasurement] = useState("times");
@@ -193,7 +140,6 @@ export default function NewHabitScreen(): JSX.Element {
 
   const createAction = buildCreateHabitAction({
     name,
-    frequency,
     color,
     trackingMode,
     measurement,
@@ -256,12 +202,6 @@ export default function NewHabitScreen(): JSX.Element {
           }}
         />
       ) : null}
-
-      <FrequencySelector
-        frequency={frequency}
-        onChange={setFrequency}
-        frequencies={FREQUENCIES}
-      />
 
       {/* Signature colour */}
       <section>
