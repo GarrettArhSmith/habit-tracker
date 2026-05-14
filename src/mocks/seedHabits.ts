@@ -194,7 +194,13 @@ export function createSeedHabits(): NormalizeHabit[] {
     },
     {
       id: "57f02ab5-eb0a-4fb9-97bc-faa59e8f9fbe",
-      name: "Gratitude Practice
+      name: "Gratitude Practice",
+      color: "#84cc16",
+      trackingMode: "binary",
+      dailyTarget: 1,
+      completionRule: "goal",
+      measurement: "times",
+    },
   ];
 
   const histories = buildBalancedHistories(days, templates);

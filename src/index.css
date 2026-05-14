@@ -254,7 +254,9 @@ input {
   flex-direction: column;
   gap: var(--space-md);
   padding: var(--margin);
-  padding-bottom: calc(var(--margin) + 88px + env(safe-area-inset-bottom));
+  padding-bottom: calc(
+    var(--margin) + 88px + 60px + env(safe-area-inset-bottom)
+  );
   animation: screen-in 240ms ease;
 }
 @keyframes screen-in {
