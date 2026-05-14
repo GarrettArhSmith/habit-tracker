@@ -239,7 +239,7 @@ input {
 /* ─── LAYOUT SHELL ─── */
 .app-shell {
   max-width: 420px;
-  height: 100vh;
+  height: 100dvh;
   margin: 0 auto;
   position: relative;
   display: flex;
@@ -254,7 +254,7 @@ input {
   flex-direction: column;
   gap: var(--space-md);
   padding: var(--margin);
-  padding-bottom: calc(var(--margin) + 88px);
+  padding-bottom: calc(var(--margin) + 88px + env(safe-area-inset-bottom));
   animation: screen-in 240ms ease;
 }
 @keyframes screen-in {
@@ -344,7 +344,7 @@ input {
   width: min(420px, 100vw);
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  padding: 10px 8px 22px;
+  padding: 10px 8px calc(22px + env(safe-area-inset-bottom));
   background-color: var(--surface-low);
   border-top: 1px solid var(--outline-variant);
   backdrop-filter: blur(12px);
