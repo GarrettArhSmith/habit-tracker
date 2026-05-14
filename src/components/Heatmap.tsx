@@ -147,10 +147,20 @@ function renderHeatmapCell(
     : undefined;
 
   // blank cell (no data or no completion)
-  if (!slot || slot.intensity === 0) {
+  if (!slot) {
     return (
       <span
-        key={slot ? slot.key : `r${rowIndex}-c${columnIndex}`}
+        key={`r${rowIndex}-c${columnIndex}`}
+        className="hm-cell"
+        style={{ backgroundColor: "transparent", ...cellSizeStyle }}
+        aria-hidden="true"
+      />
+    );
+  }
+  if (slot.intensity === 0) {
+    return (
+      <span
+        key={slot.key}
         className="hm-cell"
         style={{
           backgroundColor: scale[0],
