@@ -1168,6 +1168,9 @@ input {
   font-weight: 800;
   letter-spacing: -0.02em;
   color: var(--on-surface);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .line-input-mid {
@@ -1289,6 +1292,9 @@ input {
   font-size: 22px;
   font-weight: 800;
   color: var(--on-surface);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .legendary-streak {
@@ -1323,6 +1329,10 @@ input {
 .streak-name {
   flex: 1;
   font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .streak-value {
