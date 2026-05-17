@@ -8,11 +8,56 @@ import {
 } from "./supabaseSync";
 import type { AppAction, AppState } from "./types";
 
+type GuestMigrationSnapshot = {
+  habits: AppState["habits"];
+  settings: AppState["settings"];
+  settingsUpdatedAt: AppState["settingsUpdatedAt"];
+};
+
+export function resolveHydrationLocalSources(params: {
+  localState: AppState;
+  guestSnapshot: GuestMigrationSnapshot | null;
+}): {
+  localHabitsForMerge: AppState["habits"];
+  localSettingsForMerge: AppState["settings"];
+  localSettingsUpdatedAtForMerge: AppState["settingsUpdatedAt"];
+  hasGuestSnapshot: boolean;
+} {
+  if (!params.guestSnapshot) {
+    return {
+      localHabitsForMerge: params.localState.habits,
+      localSettingsForMerge: params.localState.settings,
+      localSettingsUpdatedAtForMerge: params.localState.settingsUpdatedAt,
+      hasGuestSnapshot: false,
+    };
+  }
+
+  return {
+    localHabitsForMerge: [
+      ...params.guestSnapshot.habits,
+      ...params.localState.habits,
+    ],
+    localSettingsForMerge: params.guestSnapshot.settings,
+    localSettingsUpdatedAtForMerge: params.guestSnapshot.settingsUpdatedAt,
+    hasGuestSnapshot: true,
+  };
+}
+
+export function shouldPushHydratedSnapshot(params: {
+  remoteHabitCount: number;
+  hasGuestSnapshot: boolean;
+}): boolean {
+  return params.remoteHabitCount === 0 || params.hasGuestSnapshot;
+}
+
 type HydrationParams = {
   userId: string | null;
   isAuthConfigured: boolean;
   rawDispatch: Dispatch<AppAction>;
   stateRef: MutableRefObject<AppState>;
+  guestMigrationRef: MutableRefObject<GuestMigrationSnapshot | null>;
+  isHydratingRef: MutableRefObject<boolean>;
+  onGuestMigrationCommitted: () => void;
   flushSyncQueue: () => Promise<void>;
 };
 
@@ -26,9 +71,20 @@ export function useHydrateFromRemote({
   isAuthConfigured,
   rawDispatch,
   stateRef,
+  guestMigrationRef,
+  isHydratingRef,
+  onGuestMigrationCommitted,
   flushSyncQueue,
 }: HydrationParams): void {
   const lastHydratedUserRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (userId) {
+      return;
+    }
+
+    lastHydratedUserRef.current = null;
+  }, [userId]);
 
   useEffect(() => {
     if (
@@ -40,6 +96,7 @@ export function useHydrateFromRemote({
     }
 
     let cancelled = false;
+    isHydratingRef.current = true;
 
     rawDispatch({ type: "SET_SYNC_STATUS", status: "syncing" });
 
@@ -51,17 +108,27 @@ export function useHydrateFromRemote({
         }
 
         const localState = stateRef.current;
+        const guestSnapshot = guestMigrationRef.current;
+        const {
+          localHabitsForMerge,
+          localSettingsForMerge,
+          localSettingsUpdatedAtForMerge,
+          hasGuestSnapshot,
+        } = resolveHydrationLocalSources({
+          localState,
+          guestSnapshot,
+        });
         console.debug(
-          `[Sync Hydration] Remote habits: ${remote.habits.length}, Local habits: ${localState.habits.length}`,
+          `[Sync Hydration] Remote habits: ${remote.habits.length}, Local habits: ${localHabitsForMerge.length}`,
         );
 
         const mergedHabits = mergeHabitsByUpdatedAt(
-          localState.habits,
+          localHabitsForMerge,
           remote.habits,
         );
         const mergedSettings = mergeSettingsByUpdatedAt({
-          localSettings: localState.settings,
-          localSettingsUpdatedAt: localState.settingsUpdatedAt,
+          localSettings: localSettingsForMerge,
+          localSettingsUpdatedAt: localSettingsUpdatedAtForMerge,
           remoteSettings: remote.settings,
           remoteSettingsUpdatedAt: remote.settingsUpdatedAt,
         });
@@ -78,9 +145,14 @@ export function useHydrateFromRemote({
           },
         });
 
-        if (remote.habits.length === 0) {
+        const shouldPushMergedSnapshot = shouldPushHydratedSnapshot({
+          remoteHabitCount: remote.habits.length,
+          hasGuestSnapshot,
+        });
+
+        if (shouldPushMergedSnapshot) {
           console.debug(
-            `[Sync Hydration] Remote is empty, uploading ${mergedHabits.length} local habits to Supabase`,
+            `[Sync Hydration] Uploading ${mergedHabits.length} merged habits to Supabase`,
           );
           await pushLocalSnapshot({
             userId,
@@ -92,6 +164,10 @@ export function useHydrateFromRemote({
             },
           });
           console.debug("[Sync Hydration] Upload complete");
+
+          if (hasGuestSnapshot) {
+            onGuestMigrationCommitted();
+          }
         } else {
           console.debug(
             "[Sync Hydration] Remote has data, skipping local upload",
@@ -113,11 +189,22 @@ export function useHydrateFromRemote({
             : "Failed to sync from Supabase.";
         console.error(`[Sync Hydration Error] ${message}`, error);
         setSyncError(rawDispatch, message);
+      } finally {
+        isHydratingRef.current = false;
       }
     })();
 
     return () => {
       cancelled = true;
     };
-  }, [flushSyncQueue, isAuthConfigured, rawDispatch, stateRef, userId]);
+  }, [
+    flushSyncQueue,
+    guestMigrationRef,
+    isAuthConfigured,
+    isHydratingRef,
+    onGuestMigrationCommitted,
+    rawDispatch,
+    stateRef,
+    userId,
+  ]);
 }

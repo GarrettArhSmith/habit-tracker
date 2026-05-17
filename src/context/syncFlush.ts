@@ -9,6 +9,7 @@ type QueueFlushParams = {
   isAuthConfigured: boolean;
   rawDispatch: Dispatch<AppAction>;
   stateRef: MutableRefObject<AppState>;
+  isHydratingRef: MutableRefObject<boolean>;
 };
 
 function setSyncIdle(rawDispatch: Dispatch<AppAction>): void {
@@ -30,11 +31,17 @@ export function useFlushSyncQueue({
   isAuthConfigured,
   rawDispatch,
   stateRef,
+  isHydratingRef,
 }: QueueFlushParams): () => Promise<void> {
   const isFlushingRef = useRef(false);
 
   return useCallback(async () => {
-    if (!userId || !isAuthConfigured || isFlushingRef.current) {
+    if (
+      !userId ||
+      !isAuthConfigured ||
+      isFlushingRef.current ||
+      isHydratingRef.current
+    ) {
       return;
     }
 
@@ -87,5 +94,5 @@ export function useFlushSyncQueue({
     } finally {
       isFlushingRef.current = false;
     }
-  }, [isAuthConfigured, rawDispatch, stateRef, userId]);
+  }, [isAuthConfigured, isHydratingRef, rawDispatch, stateRef, userId]);
 }

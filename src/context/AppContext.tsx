@@ -1,4 +1,5 @@
 import {
+  useCallback,
   createContext,
   useContext,
   useEffect,
@@ -20,7 +21,7 @@ import {
   useThemeAttribute,
 } from "./appStateEffects";
 import { getInitialStateForUser } from "./appStateInit";
-import { getStorageKeyForUser, STORAGE_KEY } from "./config";
+import { ANON_STORAGE_KEY, STORAGE_KEY } from "./config";
 
 const AppContext = createContext<AppContextValue | undefined>(undefined);
 
@@ -33,6 +34,12 @@ export function AppProvider({ children }: AppProviderProps): JSX.Element {
     getInitialStateForUser(null),
   );
   const stateRef = useRef(state);
+  const guestMigrationRef = useRef<{
+    habits: typeof state.habits;
+    settings: typeof state.settings;
+    settingsUpdatedAt: typeof state.settingsUpdatedAt;
+  } | null>(null);
+  const isHydratingRef = useRef(false);
   const { user, isConfigured: isAuthConfigured } = useAuth();
   const userId = user?.id ?? null;
   const previousUserIdRef = useRef<string | null>(userId);
@@ -45,11 +52,21 @@ export function AppProvider({ children }: AppProviderProps): JSX.Element {
       return;
     }
 
+    const previousUserId = previousUserIdRef.current;
+
     previousUserIdRef.current = userId;
 
+    if (userId && !previousUserId) {
+      guestMigrationRef.current = {
+        habits: stateRef.current.habits,
+        settings: stateRef.current.settings,
+        settingsUpdatedAt: stateRef.current.settingsUpdatedAt,
+      };
+    }
+
     if (!userId) {
+      guestMigrationRef.current = null;
       try {
-        localStorage.removeItem(getStorageKeyForUser(null));
         localStorage.removeItem(STORAGE_KEY);
       } catch {
         // Ignore cleanup failures.
@@ -62,6 +79,16 @@ export function AppProvider({ children }: AppProviderProps): JSX.Element {
     });
   }, [hasUserChanged, rawDispatch, userId]);
 
+  const commitGuestMigration = useCallback(() => {
+    guestMigrationRef.current = null;
+
+    try {
+      localStorage.removeItem(ANON_STORAGE_KEY);
+    } catch {
+      // Ignore cleanup failures.
+    }
+  }, []);
+
   const syncUserId = hasUserChanged ? null : userId;
 
   const flushSyncQueue = useFlushSyncQueue({
@@ -69,6 +96,7 @@ export function AppProvider({ children }: AppProviderProps): JSX.Element {
     isAuthConfigured,
     rawDispatch,
     stateRef,
+    isHydratingRef,
   });
 
   useHydrateFromRemote({
@@ -76,6 +104,9 @@ export function AppProvider({ children }: AppProviderProps): JSX.Element {
     isAuthConfigured,
     rawDispatch,
     stateRef,
+    guestMigrationRef,
+    isHydratingRef,
+    onGuestMigrationCommitted: commitGuestMigration,
     flushSyncQueue,
   });
 
